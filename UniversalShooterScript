@@ -1,9 +1,14 @@
--- Universal ESP Script
+-- Services
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local ESPEnabled = true -- Default state for ESP
+local CoreGui = game:GetService("CoreGui")
+local StarterGui = game:GetService("StarterGui")
+local UserInputService = game:GetService("UserInputService")
 
--- Function to add ESP to a character
+-- Variables
+local LocalPlayer = Players.LocalPlayer
+local ESPEnabled = false -- Default ESP state
+
+-- Function to add ESP to characters
 local function addHighlight(character)
     if character:FindFirstChild("HumanoidRootPart") then
         if not character:FindFirstChild("Highlight") then
@@ -11,7 +16,7 @@ local function addHighlight(character)
             highlight.Name = "Highlight"
             highlight.Adornee = character
             highlight.Parent = character
-            highlight.FillColor = Color3.fromRGB(0, 255, 0) -- Green for ESP
+            highlight.FillColor = Color3.fromRGB(0, 255, 0) -- Green fill
             highlight.FillTransparency = 0.5
             highlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- White outline
             highlight.OutlineTransparency = 0
@@ -30,6 +35,15 @@ local function toggleESP()
                 addHighlight(player.Character)
             end
         end
+
+        -- Add ESP for players who join later
+        Players.PlayerAdded:Connect(function(player)
+            player.CharacterAdded:Connect(function(character)
+                if ESPEnabled then
+                    addHighlight(character)
+                end
+            end)
+        end)
     else
         -- Disable ESP
         for _, player in ipairs(Players:GetPlayers()) do
@@ -40,45 +54,38 @@ local function toggleESP()
     end
 end
 
--- Apply ESP to existing players and handle new players
-for _, player in ipairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer and player.Character then
-        addHighlight(player.Character)
-    end
+-- GUI Creation
+local ScreenGui = Instance.new("ScreenGui")
+local ToggleButton = Instance.new("TextButton")
 
-    player.CharacterAdded:Connect(function(character)
-        if ESPEnabled then
-            addHighlight(character)
-        end
-    end)
-end
+-- Parent GUI to CoreGui
+ScreenGui.Name = "ESP_GUI"
+ScreenGui.Parent = CoreGui
 
-Players.PlayerAdded:Connect(function(player)
-    if player ~= LocalPlayer then
-        player.CharacterAdded:Connect(function(character)
-            if ESPEnabled then
-                addHighlight(character)
-            end
-        end)
-    end
+-- Configure the toggle button
+ToggleButton.Name = "ToggleESP"
+ToggleButton.Parent = ScreenGui
+ToggleButton.Size = UDim2.new(0, 200, 0, 50)
+ToggleButton.Position = UDim2.new(0, 10, 0, 10)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 20
+ToggleButton.Text = "Enable ESP"
+
+-- Button click event
+ToggleButton.MouseButton1Click:Connect(function()
+    toggleESP()
+    ToggleButton.Text = ESPEnabled and "Disable ESP" or "Enable ESP"
+    StarterGui:SetCore("SendNotification", {
+        Title = "ESP Status";
+        Text = ESPEnabled and "ESP Enabled" or "ESP Disabled";
+        Duration = 3;
+    })
 end)
 
--- Simple notification for toggling ESP
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "ESP Loaded";
-    Text = "Press F to toggle ESP.";
+-- Notification on load
+StarterGui:SetCore("SendNotification", {
+    Title = "ESP Script";
+    Text = "Click the button to toggle ESP.";
     Duration = 5;
 })
-
--- Listen for toggle key press
-local UserInputService = game:GetService("UserInputService")
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.F then
-        toggleESP()
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "ESP Toggled";
-            Text = ESPEnabled and "ESP Enabled" or "ESP Disabled";
-            Duration = 3;
-        })
-    end
-end)
