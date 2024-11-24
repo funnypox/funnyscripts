@@ -1,0 +1,77 @@
+-- Services
+local Players = game:GetService("Players")
+
+-- Variables
+local ESPEnabled = false -- ESP toggle
+local LocalPlayer = Players.LocalPlayer
+
+-- Function to add ESP to a character
+local function addHighlight(character)
+    if character:FindFirstChild("HumanoidRootPart") then
+        if not character:FindFirstChild("Highlight") then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "Highlight"
+            highlight.Adornee = character
+            highlight.Parent = character
+            highlight.FillColor = Color3.fromRGB(0, 255, 0) -- Green
+            highlight.FillTransparency = 0.5
+            highlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- White
+            highlight.OutlineTransparency = 0
+        end
+    end
+end
+
+-- Function to toggle ESP
+local function toggleESP()
+    ESPEnabled = not ESPEnabled
+
+    if ESPEnabled then
+        -- Enable ESP for all players
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                addHighlight(player.Character)
+            end
+        end
+
+        -- Listen for new players and respawns
+        Players.PlayerAdded:Connect(function(player)
+            if player ~= LocalPlayer then
+                player.CharacterAdded:Connect(function(character)
+                    if ESPEnabled then
+                        addHighlight(character)
+                    end
+                end)
+            end
+        end)
+    else
+        -- Disable ESP
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("Highlight") then
+                player.Character.Highlight:Destroy()
+            end
+        end
+    end
+end
+
+-- GUI Creation
+local ScreenGui = Instance.new("ScreenGui")
+local ToggleButton = Instance.new("TextButton")
+
+-- Parent GUI to Player's Screen
+ScreenGui.Parent = game.CoreGui
+ScreenGui.Name = "ESP_GUI"
+
+-- Configure Toggle Button
+ToggleButton.Parent = ScreenGui
+ToggleButton.Size = UDim2.new(0, 200, 0, 50)
+ToggleButton.Position = UDim2.new(0, 10, 0, 10)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 20
+ToggleButton.Text = "Toggle ESP"
+
+-- Button Click Event
+ToggleButton.MouseButton1Click:Connect(function()
+    toggleESP()
+    ToggleButton.Text = ESPEnabled and "Disable ESP" or "Enable ESP"
+end)
