@@ -56,17 +56,26 @@ end
 
 -- GUI Creation
 local ScreenGui = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
 local ToggleButton = Instance.new("TextButton")
 
 -- Parent GUI to CoreGui
 ScreenGui.Name = "ESP_GUI"
 ScreenGui.Parent = CoreGui
 
--- Configure the toggle button
+-- Configure Frame
+Frame.Name = "MainFrame"
+Frame.Parent = ScreenGui
+Frame.Size = UDim2.new(0, 300, 0, 200) -- Width: 300px, Height: 200px
+Frame.Position = UDim2.new(0.5, -150, 0.5, -100) -- Centered on screen
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Frame.BorderSizePixel = 0
+
+-- Configure Toggle Button
 ToggleButton.Name = "ToggleESP"
-ToggleButton.Parent = ScreenGui
+ToggleButton.Parent = Frame
 ToggleButton.Size = UDim2.new(0, 200, 0, 50)
-ToggleButton.Position = UDim2.new(0, 10, 0, 10)
+ToggleButton.Position = UDim2.new(0.5, -100, 0.5, -25) -- Centered in the frame
 ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.TextSize = 20
