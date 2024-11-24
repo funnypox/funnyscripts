@@ -1,9 +1,7 @@
--- Services
+-- Universal ESP Script
 local Players = game:GetService("Players")
-
--- Variables
-local ESPEnabled = false -- ESP toggle
 local LocalPlayer = Players.LocalPlayer
+local ESPEnabled = true -- Default state for ESP
 
 -- Function to add ESP to a character
 local function addHighlight(character)
@@ -13,9 +11,9 @@ local function addHighlight(character)
             highlight.Name = "Highlight"
             highlight.Adornee = character
             highlight.Parent = character
-            highlight.FillColor = Color3.fromRGB(0, 255, 0) -- Green
+            highlight.FillColor = Color3.fromRGB(0, 255, 0) -- Green for ESP
             highlight.FillTransparency = 0.5
-            highlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- White
+            highlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- White outline
             highlight.OutlineTransparency = 0
         end
     end
@@ -32,17 +30,6 @@ local function toggleESP()
                 addHighlight(player.Character)
             end
         end
-
-        -- Listen for new players and respawns
-        Players.PlayerAdded:Connect(function(player)
-            if player ~= LocalPlayer then
-                player.CharacterAdded:Connect(function(character)
-                    if ESPEnabled then
-                        addHighlight(character)
-                    end
-                end)
-            end
-        end)
     else
         -- Disable ESP
         for _, player in ipairs(Players:GetPlayers()) do
@@ -53,25 +40,45 @@ local function toggleESP()
     end
 end
 
--- GUI Creation
-local ScreenGui = Instance.new("ScreenGui")
-local ToggleButton = Instance.new("TextButton")
+-- Apply ESP to existing players and handle new players
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer and player.Character then
+        addHighlight(player.Character)
+    end
 
--- Parent GUI to Player's Screen
-ScreenGui.Parent = game.CoreGui
-ScreenGui.Name = "ESP_GUI"
+    player.CharacterAdded:Connect(function(character)
+        if ESPEnabled then
+            addHighlight(character)
+        end
+    end)
+end
 
--- Configure Toggle Button
-ToggleButton.Parent = ScreenGui
-ToggleButton.Size = UDim2.new(0, 200, 0, 50)
-ToggleButton.Position = UDim2.new(0, 10, 0, 10)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.TextSize = 20
-ToggleButton.Text = "Toggle ESP"
+Players.PlayerAdded:Connect(function(player)
+    if player ~= LocalPlayer then
+        player.CharacterAdded:Connect(function(character)
+            if ESPEnabled then
+                addHighlight(character)
+            end
+        end)
+    end
+end)
 
--- Button Click Event
-ToggleButton.MouseButton1Click:Connect(function()
-    toggleESP()
-    ToggleButton.Text = ESPEnabled and "Disable ESP" or "Enable ESP"
+-- Simple notification for toggling ESP
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "ESP Loaded";
+    Text = "Press F to toggle ESP.";
+    Duration = 5;
+})
+
+-- Listen for toggle key press
+local UserInputService = game:GetService("UserInputService")
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.F then
+        toggleESP()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "ESP Toggled";
+            Text = ESPEnabled and "ESP Enabled" or "ESP Disabled";
+            Duration = 3;
+        })
+    end
 end)
